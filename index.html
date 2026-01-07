@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>快播影视集团</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;background:#f4f6f9;
+padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.header{background:#0f172a;color:#fff;padding:14px;text-align:center;font-size:18px;font-weight:600}
+.wrap{max-width:520px;margin:0 auto;padding:12px}
+.card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
+select,button{width:100%;padding:14px;margin-top:10px;font-size:16px;border-radius:12px}
+button{background:#2563eb;color:#fff;border:none}
+.info{display:none;margin-top:10px}
+.price{font-size:20px;font-weight:700;color:#16a34a}
+.addr{background:#f1f5f9;padding:10px;border-radius:10px;font-size:13px;word-break:break-all}
+.notice{font-size:13px;color:#64748b;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="header">快播影视集团</div>
+<div class="wrap">
+<div class="card">
+<select id="pkg">
+<option value="">请选择套餐</option>
+<option value="15">套餐一</option>
+<option value="76">套餐二</option>
+<option value="76">套餐三</option>
+<option value="160">SVIP</option>
+</select>
+<div class="info" id="info">
+<div class="price">应付金额：<span id="amount"></span> USDT</div>
+<div class="notice">收款地址</div>
+<div class="addr" id="addr"></div>
+<div class="notice" id="status">已生成订单，请完成转账后点击「我已付款」</div>
+<button id="paid">我已付款</button>
+</div>
+</div>
+</div>
+<script>
+var API="http://localhost:3000";
+var orderId=null;
+var pkg=document.getElementById('pkg');
+var info=document.getElementById('info');
+var amount=document.getElementById('amount');
+var addr=document.getElementById('addr');
+var status=document.getElementById('status');
+var paid=document.getElementById('paid');
+
+pkg.onchange=async function(){
+ if(!this.value) return;
+ var r=await fetch(API+"/api/order",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({base:this.value})});
+ var j=await r.json();
+ orderId=j.orderId;
+ amount.innerText=j.amount;
+ addr.innerText=j.address;
+ info.style.display="block";
+};
+
+paid.onclick=async function(){
+ var r=await fetch(API+"/api/order/"+orderId);
+ var j=await r.json();
+ if(j.status==="paid"){
+  await navigator.clipboard.writeText(j.code);
+  location.href="https://t.me/okklike_bot";
+ }else if(j.status==="expired"){
+  status.innerText="订单已超时，请重新下单";
+ }else{
+  status.innerText="尚未检测到到账，请稍后再试";
+ }
+};
+</script>
+</body>
+</html>
